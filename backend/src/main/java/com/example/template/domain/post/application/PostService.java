@@ -8,6 +8,7 @@ import com.example.template.domain.post.domain.Post;
 import com.example.template.domain.post.domain.PostErrorCode;
 import com.example.template.domain.post.domain.PostRepository;
 import com.example.template.domain.post.infra.mybatis.PostQueryMapper;
+import com.example.template.domain.user.application.UserService;
 import com.example.template.domain.user.domain.Role;
 import com.example.template.global.error.BusinessException;
 import com.example.template.global.html.HtmlSanitizer;
@@ -34,6 +35,7 @@ public class PostService {
     private final PostQueryMapper postQueryMapper;
     private final BoardService boardService;
     private final FileService fileService;
+    private final UserService userService;
     private final HtmlSanitizer htmlSanitizer;
     private final Clock clock;
 
@@ -42,12 +44,14 @@ public class PostService {
             PostQueryMapper postQueryMapper,
             BoardService boardService,
             FileService fileService,
+            UserService userService,
             HtmlSanitizer htmlSanitizer,
             Clock clock) {
         this.postRepository = postRepository;
         this.postQueryMapper = postQueryMapper;
         this.boardService = boardService;
         this.fileService = fileService;
+        this.userService = userService;
         this.htmlSanitizer = htmlSanitizer;
         this.clock = clock;
     }
@@ -81,7 +85,8 @@ public class PostService {
         postRepository.increaseViewCount(postId);
 
         boolean canEdit = isAdmin || post.isAuthor(principal == null ? null : principal.userId());
-        return new PostDetail(post, board, fileService.getAttachmentsOfPost(postId), canEdit, canEdit);
+        String authorNickname = userService.getById(post.getAuthorId()).getNickname();
+        return new PostDetail(post, board, authorNickname, fileService.getAttachmentsOfPost(postId), canEdit, canEdit);
     }
 
     @Transactional

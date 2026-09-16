@@ -128,3 +128,84 @@
     @apply font-sans;
   }
 }
+
+/* 게시글 본문(RichTextViewer)과 에디터 안의 기본 서식 */
+@layer components {
+  .prose-content :where(p) {
+    margin-block: 0.5rem;
+  }
+  .prose-content :where(h1) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-block: 1rem 0.5rem;
+  }
+  .prose-content :where(h2) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-block: 1rem 0.5rem;
+  }
+  .prose-content :where(h3) {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-block: 0.75rem 0.5rem;
+  }
+  .prose-content :where(ul) {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-block: 0.5rem;
+  }
+  .prose-content :where(ol) {
+    list-style: decimal;
+    padding-left: 1.25rem;
+    margin-block: 0.5rem;
+  }
+  .prose-content :where(blockquote) {
+    border-left: 3px solid var(--border);
+    padding-left: 0.75rem;
+    color: var(--muted-foreground);
+    margin-block: 0.5rem;
+  }
+  .prose-content :where(pre) {
+    background: var(--muted);
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    margin-block: 0.5rem;
+  }
+  .prose-content :where(code) {
+    font-family: ui-monospace, monospace;
+    font-size: 0.875em;
+  }
+  .prose-content :where(a) {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-content :where(img) {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+  }
+
+  /* TipTap 빈 상태 안내문 */
+  .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--muted-foreground);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+  .tiptap {
+    outline: none;
+  }
+  .tiptap :where(ul) {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .tiptap :where(ol) {
+    list-style: decimal;
+    padding-left: 1.25rem;
+  }
+  .tiptap :where(img) {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+  }
+}

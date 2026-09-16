@@ -48,7 +48,7 @@ public final class PostResponses {
 
     public record BoardRef(String slug, String name) {}
 
-    public record AuthorRef(Long id) {}
+    public record AuthorRef(Long id, String nickname) {}
 
     public record PostDetailResponse(
             Long id,
@@ -71,7 +71,7 @@ public final class PostResponses {
                     new BoardRef(detail.board().getSlug(), detail.board().getName()),
                     detail.post().getTitle(),
                     detail.post().getContent(),
-                    new AuthorRef(detail.post().getAuthorId()),
+                    new AuthorRef(detail.post().getAuthorId(), detail.authorNickname()),
                     detail.post().isNotice(),
                     detail.post().getViewCount(),
                     detail.post().getCommentCount(),

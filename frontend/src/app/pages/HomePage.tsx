@@ -1,46 +1,37 @@
 import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuthStore } from '@/shared/store/authStore'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useBoards } from '@/features/board/hooks'
+import { EmptyState, ErrorState } from '@/shared/ui/States'
 
-/** M5에서 게시판 목록과 최근 글로 교체한다. */
+/** 홈: 현재 사용자가 읽을 수 있는 게시판 목록 */
 export default function HomePage() {
-  const { status, user } = useAuthStore()
+  const boards = useBoards()
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Fullstack Template</CardTitle>
-          <CardDescription>Spring Boot + React 모노레포 템플릿</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {status === 'authenticated' && user ? (
-            <p className="text-sm">
-              <span className="font-medium">{user.nickname}</span>님으로 로그인되어 있습니다.
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              로그인하면 글쓰기와 댓글 기능을 사용할 수 있습니다.
-            </p>
-          )}
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">게시판</h1>
 
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline">
-              <Link to="/me">내 정보</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <a href="/swagger-ui.html" target="_blank" rel="noreferrer">
-                API 문서
-              </a>
-            </Button>
-          </div>
+      {boards.isLoading && <Skeleton className="h-40 w-full" />}
+      {boards.isError && <ErrorState error={boards.error} onRetry={() => void boards.refetch()} />}
+      {boards.data?.length === 0 && <EmptyState message="공개된 게시판이 없습니다." />}
 
-          <p className="text-sm text-muted-foreground">
-            다음 단계: M4 게시판 백엔드, M5 게시판 화면
-          </p>
-        </CardContent>
-      </Card>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {boards.data?.map((board) => (
+          <Link key={board.id} to={`/boards/${board.slug}`} className="block">
+            <Card className="h-full transition-colors hover:border-primary">
+              <CardHeader>
+                <CardTitle className="text-base">{board.name}</CardTitle>
+                {board.description && <CardDescription>{board.description}</CardDescription>}
+              </CardHeader>
+              <CardContent className="text-xs text-muted-foreground">
+                {board.commentEnabled ? '댓글 가능' : '댓글 없음'}
+                {board.attachmentEnabled ? ' · 첨부 가능' : ''}
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }

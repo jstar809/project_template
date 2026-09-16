@@ -11,6 +11,9 @@ const HomePage = lazy(() => import('./pages/HomePage'))
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
 const SignupPage = lazy(() => import('@/features/auth/pages/SignupPage'))
 const MePage = lazy(() => import('@/features/user/pages/MePage'))
+const PostListPage = lazy(() => import('@/features/post/pages/PostListPage'))
+const PostDetailPage = lazy(() => import('@/features/post/pages/PostDetailPage'))
+const PostEditorPage = lazy(() => import('@/features/post/pages/PostEditorPage'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardPlaceholder'))
 
 export function AppRouter() {
@@ -21,6 +24,10 @@ export function AppRouter() {
         <Route element={<MainLayout />}>
           <Route index element={<HomePage />} />
 
+          {/* 게시판: 읽기는 비로그인도 가능하다(권한은 서버가 판단) */}
+          <Route path="boards/:slug" element={<PostListPage />} />
+          <Route path="boards/:slug/posts/:id" element={<PostDetailPage />} />
+
           {/* 로그인한 사용자는 접근할 필요가 없는 화면 */}
           <Route element={<GuestOnly />}>
             <Route path="login" element={<LoginPage />} />
@@ -30,6 +37,8 @@ export function AppRouter() {
           {/* 로그인이 필요한 화면 */}
           <Route element={<RequireAuth />}>
             <Route path="me" element={<MePage />} />
+            <Route path="boards/:slug/write" element={<PostEditorPage />} />
+            <Route path="boards/:slug/posts/:id/edit" element={<PostEditorPage />} />
           </Route>
 
           <Route path="403" element={<ForbiddenPage />} />
