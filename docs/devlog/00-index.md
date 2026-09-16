@@ -5,7 +5,7 @@
 | 단계 | 문서 | 내용 | 상태 | 소요 |
 |---|---|---|---|---|
 | M0 | [M0-scaffolding.md](M0-scaffolding.md) | 레포 스캐폴딩과 개발환경 | ✅ 완료 (2026-09-16) | 약 1시간 |
-| M1 | M1-backend-infra.md | 백엔드 공통 인프라 (JPA+MyBatis, DB 2종, ArchUnit) | ⬜ 예정 | |
+| M1 | [M1-backend-infra.md](M1-backend-infra.md) | 백엔드 공통 인프라 (JPA+MyBatis, DB 2종, ArchUnit) | ✅ 완료 (2026-09-16) | 약 1.5시간 |
 | M2 | M2-auth.md | 인증과 사용자 (JWT) | ⬜ 예정 | |
 | M3 | M3-frontend-base.md | 프론트 기반과 인증 화면 | ⬜ 예정 | |
 | M4 | M4-cms-backend.md | CMS 백엔드 (게시판·글·댓글·파일) | ⬜ 예정 | |

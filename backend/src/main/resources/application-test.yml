@@ -1,0 +1,12 @@
+logging:
+  level:
+    root: warn
+    com.example.template: info
+    org.testcontainers: warn
+    com.github.dockerjava: warn
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

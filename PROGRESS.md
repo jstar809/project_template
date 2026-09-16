@@ -8,8 +8,8 @@
 | 단계 | 내용 | 상태 | 사용자 확인 | 커밋 | 완료일 |
 |---|---|---|---|---|---|
 | 준비 | 환경 점검, 레포 초기화 | ✅ | ✅ | 첫 커밋 | 2026-09-15 |
-| M0 | 레포 스캐폴딩과 개발환경 | 🙋 | ⬜ | `8861f88` | 2026-09-16 |
-| M1 | 백엔드 공통 인프라 (JPA+MyBatis, DB 2종, ArchUnit) | ⬜ | ⬜ | | |
+| M0 | 레포 스캐폴딩과 개발환경 | ✅ | ⏭️ 보류 | `8861f88` | 2026-09-16 |
+| M1 | 백엔드 공통 인프라 (JPA+MyBatis, DB 2종, ArchUnit) | 🙋 | ⬜ | M1 커밋 | 2026-09-16 |
 | M2 | 인증과 사용자 (JWT) | ⬜ | ⬜ | | |
 | M3 | 프론트 기반과 인증 화면 | ⬜ | ⬜ | | |
 | M4 | CMS 백엔드 (게시판·글·댓글·파일) | ⬜ | ⬜ | | |
@@ -105,29 +105,30 @@ npm run dev
 - [ ] 확인이 끝나면 `docker compose --profile postgresql down`으로 정리한다.
 
 ### 메모
+- 2026-09-16: 사용자 시간 부족으로 **수동 확인은 보류**하고 M1로 진행. 완료 조건은 Claude가 자동 검증 완료(두 DB 기동 + health UP + 프론트 빌드). 나중에 확인 후 문제가 있으면 이슈 기록에 적는다.
 
 ---
 
 ## M1. 백엔드 공통 인프라
 
 ### 작업
-- [ ] 1-1. 패키지 구조: `global/*`, 도메인 계층(`api/application/domain/infra`)
-- [ ] 1-2. DB 전환: `DB_VENDOR` → `application-db-postgresql.yml` / `application-db-mysql.yml`
-- [ ] 1-3. Flyway 마이그레이션을 DB 2종 폴더에 작성: `V1__init.sql`, `V2__seed.sql`, `V3__shedlock.sql`
-- [ ] 1-4. JPA 설정: `validate`, UTC, `open-in-view=false`, Auditing, `BaseTimeEntity`/`BaseEntity`
-- [ ] 1-5. MyBatis 설정: `DatabaseIdProvider`, camelCase 매핑, mapper 경로, 트랜잭션 공유
-- [ ] 1-6. 에러 처리: `ErrorCode`, `BusinessException`, `GlobalExceptionHandler`(ProblemDetail), `PageResponse`
-- [ ] 1-7. traceId 필터, 로깅(local 텍스트 / prod JSON), CORS, Swagger, Actuator
-- [ ] 1-8. ShedLock, Caffeine 캐시, `StorageService`·`RateLimiter` 인터페이스와 기본 구현
-- [ ] 1-9. Testcontainers 테스트 베이스(`-PdbVendor`), MyBatis 샘플 쿼리 테스트
-- [ ] 1-10. ArchUnit 아키텍처 테스트 (ARCH-01~06)
-- [ ] 1-11. devlog `M1-backend-infra.md` 작성, 커밋
+- [x] 1-1. 패키지 구조: `global/*`, 도메인 계층(`api/application/domain/infra`)
+- [x] 1-2. DB 전환: `DB_VENDOR` → `application-db-postgresql.yml` / `application-db-mysql.yml`
+- [x] 1-3. Flyway 마이그레이션을 DB 2종 폴더에 작성: `V1__init.sql`, `V2__seed.sql`, `V3__shedlock.sql`
+- [x] 1-4. JPA 설정: `validate`, UTC, `open-in-view=false`, Auditing, `BaseTimeEntity`/`BaseEntity`
+- [x] 1-5. MyBatis 설정: `DatabaseIdProvider`, camelCase 매핑, mapper 경로, 트랜잭션 공유
+- [x] 1-6. 에러 처리: `ErrorCode`, `BusinessException`, `GlobalExceptionHandler`(ProblemDetail), `PageResponse`
+- [x] 1-7. traceId 필터, 로깅(local 텍스트 / prod JSON), CORS, Swagger, Actuator
+- [x] 1-8. ShedLock, Caffeine 캐시, `StorageService`·`RateLimiter` 인터페이스와 기본 구현
+- [x] 1-9. Testcontainers 테스트 베이스(`-PdbVendor`), MyBatis 샘플 쿼리 테스트
+- [x] 1-10. ArchUnit 아키텍처 테스트 (ARCH-01~06)
+- [x] 1-11. devlog `M1-backend-infra.md` 작성, 커밋
 
 ### 완료 조건 (Claude가 검증)
-- [ ] 두 DB 각각에서 마이그레이션과 JPA `validate`가 통과한다.
-- [ ] MyBatis 샘플 테스트가 두 DB에서 통과한다.
-- [ ] 없는 경로로 요청하면 ProblemDetail 형식에 traceId가 포함된 에러가 반환된다.
-- [ ] ArchUnit이 규칙 위반을 잡아낸다. 일부러 위반 샘플을 넣어 실패를 확인한 뒤 샘플은 제거한다.
+- [x] 두 DB 각각에서 마이그레이션과 JPA `validate`가 통과한다. (PostgreSQL 17 / MySQL 8.4, 각 11개 테스트 통과)
+- [x] MyBatis 샘플 테스트가 두 DB에서 통과한다. (`databaseId` 분기 동작 확인)
+- [x] 없는 경로로 요청하면 ProblemDetail 형식에 `code`, `traceId`가 포함된 404가 반환된다.
+- [x] ArchUnit이 규칙 위반을 잡아낸다. 일부러 `@Autowired` 필드 주입 샘플을 넣어 ARCH-06 실패를 확인한 뒤 삭제했다.
 
 ### 내가 확인할 것 (🙋)
 ```powershell
@@ -142,6 +143,8 @@ cd backend
 - [ ] devlog를 읽고 **JPA와 MyBatis를 언제 쓰는지** 설명할 수 있다.
 
 ### 메모
+- 2026-09-16: 사용자 시간 부족으로 수동 확인 보류. 자동 테스트(두 DB × 11건)로 검증 완료.
+- Spring Boot 4에서 `@AutoConfigureMockMvc` 패키지 경로가 바뀌었고, 없는 경로 요청 시 `NoHandlerFoundException`이 던져진다(devlog 5장 참고).
 
 ---
 

@@ -20,6 +20,11 @@ spring:
       max-request-size: ${FILE_MAX_SIZE:10MB}
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  # 정적 리소스 매핑을 끄면 없는 경로 요청이 NoResourceFoundException으로 올라와
+  # GlobalExceptionHandler가 ProblemDetail 형식으로 응답할 수 있다.
+  web:
+    resources:
+      add-mappings: false
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
@@ -51,6 +56,8 @@ springdoc:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  rate-limit:
+    login: ${LOGIN_RATE_LIMIT:10}
   storage:
     type: ${STORAGE_TYPE:local}
     local-path: ${STORAGE_LOCAL_PATH:./uploads}
