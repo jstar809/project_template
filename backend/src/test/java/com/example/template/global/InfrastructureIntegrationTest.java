@@ -61,7 +61,8 @@ class InfrastructureIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("없는 경로를 요청하면 ProblemDetail 형식에 code와 traceId가 포함된다")
     void unknownPathReturnsProblemDetail() throws Exception {
-        mockMvc.perform(get("/api/v1/does-not-exist"))
+        // /api/v1/** 는 인증이 필요해 401이 먼저 난다. 여기서는 인증과 무관한 경로로 404를 확인한다.
+        mockMvc.perform(get("/does-not-exist"))
                 .andExpect(status().isNotFound())
                 .andExpect(header().exists("X-Request-Id"))
                 .andExpect(jsonPath("$.code").value("COMMON_NOT_FOUND"))

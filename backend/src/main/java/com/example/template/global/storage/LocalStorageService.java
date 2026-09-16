@@ -1,5 +1,6 @@
 package com.example.template.global.storage;
 
+import com.example.template.global.config.AppProperties;
 import com.example.template.global.error.BusinessException;
 import com.example.template.global.error.CommonErrorCode;
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +26,9 @@ public class LocalStorageService implements StorageService {
 
     private final Path root;
 
-    public LocalStorageService(@Value("${app.storage.local-path}") String localPath) {
-        this.root = Path.of(localPath).toAbsolutePath().normalize();
+    public LocalStorageService(AppProperties appProperties) {
+        this.root =
+                Path.of(appProperties.storage().localPath()).toAbsolutePath().normalize();
     }
 
     @Override

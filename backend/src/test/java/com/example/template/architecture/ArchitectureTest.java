@@ -4,10 +4,15 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.Architectures;
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
 import org.junit.jupiter.api.DisplayName;
@@ -53,17 +58,35 @@ class ArchitectureTest {
     }
 
     @Test
-    @DisplayName("ARCH-02: Controller는 Entity를 반환하지 않는다")
+    @DisplayName("ARCH-02: Controller는 Entity를 반환하거나 파라미터로 받지 않는다")
     void controllersDoNotExposeEntities() {
-        ArchRule rule = noClasses()
+        // DTO의 정적 팩터리(UserResponse.from(user))가 Entity를 읽는 것은 허용한다.
+        // 금지하는 것은 "HTTP 경계에 Entity가 그대로 드러나는 것"이다.
+        ArchRule rule = methods()
                 .that()
-                .resideInAPackage("..api..")
-                .should()
-                .dependOnClassesThat()
-                .areAnnotatedWith(jakarta.persistence.Entity.class)
+                .areDeclaredInClassesThat()
+                .areAnnotatedWith(org.springframework.web.bind.annotation.RestController.class)
+                .and()
+                .arePublic()
+                .should(new ArchCondition<JavaMethod>("Entity를 반환하거나 파라미터로 받지 않는다") {
+                    @Override
+                    public void check(JavaMethod method, ConditionEvents events) {
+                        if (isEntity(method.getRawReturnType())) {
+                            events.add(SimpleConditionEvent.violated(method, method.getFullName() + " 가 Entity를 반환한다"));
+                        }
+                        method.getRawParameterTypes().stream()
+                                .filter(ArchitectureTest::isEntity)
+                                .forEach(parameter -> events.add(SimpleConditionEvent.violated(
+                                        method, method.getFullName() + " 가 Entity를 파라미터로 받는다")));
+                    }
+                })
                 .because("Controller는 DTO(record)로만 주고받아야 한다");
 
         rule.allowEmptyShould(true).check(CLASSES);
+    }
+
+    private static boolean isEntity(JavaClass javaClass) {
+        return javaClass.isAnnotatedWith(jakarta.persistence.Entity.class);
     }
 
     @Test
@@ -81,19 +104,40 @@ class ArchitectureTest {
     }
 
     @Test
-    @DisplayName("ARCH-04: 도메인은 다른 도메인의 infra에 의존하지 않는다")
-    void domainsDoNotDependOnOtherDomainsInfra() {
-        ArchRule rule = SlicesRuleDefinition.slices()
-                .matching(BASE + ".domain.(*)..")
-                .should()
-                .notDependOnEachOther()
-                .ignoreDependency(
-                        com.tngtech.archunit.base.DescribedPredicate.describe(
-                                "admin 도메인", clazz -> clazz.getPackageName().contains(".domain.admin")),
-                        com.tngtech.archunit.base.DescribedPredicate.alwaysTrue())
-                .because("도메인 사이는 application 서비스나 ID로만 참조한다 (admin은 조회 예외)");
+    @DisplayName("ARCH-04: 도메인은 다른 도메인의 infra나 Repository에 직접 의존하지 않는다")
+    void domainsDoNotDependOnOtherDomainsInternals() {
+        // 허용: auth.application → user.application (application 서비스를 통한 참조)
+        // 금지: auth.application → user.infra.jpa (다른 도메인의 저장소에 직접 접근)
+        ArchRule rule = noClasses()
+                .that()
+                .resideInAPackage(BASE + ".domain..")
+                .should(new ArchCondition<JavaClass>("다른 도메인의 infra 패키지에 의존한다") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String myDomain = domainNameOf(item.getPackageName());
+                        item.getDirectDependenciesFromSelf().stream()
+                                .map(dependency -> dependency.getTargetClass().getPackageName())
+                                .filter(target -> target.startsWith(BASE + ".domain."))
+                                .filter(target -> target.contains(".infra"))
+                                .filter(target -> !domainNameOf(target).equals(myDomain))
+                                .forEach(target -> events.add(
+                                        SimpleConditionEvent.violated(item, item.getName() + " → " + target)));
+                    }
+                })
+                .because("도메인 사이는 application 서비스나 ID로만 참조한다");
 
         rule.allowEmptyShould(true).check(CLASSES);
+    }
+
+    /** com.example.template.domain.user.infra.jpa → "user" */
+    private static String domainNameOf(String packageName) {
+        String prefix = BASE + ".domain.";
+        if (!packageName.startsWith(prefix)) {
+            return "";
+        }
+        String rest = packageName.substring(prefix.length());
+        int dot = rest.indexOf('.');
+        return dot < 0 ? rest : rest.substring(0, dot);
     }
 
     @Test
