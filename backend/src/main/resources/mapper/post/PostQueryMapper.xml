@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.template.domain.post.infra.mybatis.PostQueryMapper">
+
+    <!--
+      게시글 목록 조회.
+      - 작성자 닉네임과 첨부 여부까지 한 번의 쿼리로 가져온다(N+1 방지).
+      - 검색은 두 DB에서 모두 동작하도록 LOWER(...) LIKE 로 통일했다(PRD DB-08).
+    -->
+    <sql id="visibleCondition">
+        p.board_id = #{condition.boardId}
+        AND p.deleted_at IS NULL
+        AND p.status = 'PUBLISHED'
+    </sql>
+
+    <sql id="searchCondition">
+        <if test="condition.keyword != null and condition.searchType != null">
+            <choose>
+                <when test="condition.searchType == 'title'">
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+                </when>
+                <when test="condition.searchType == 'content'">
+                    AND LOWER(p.content_text) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+                </when>
+                <when test="condition.searchType == 'title_content'">
+                    AND (LOWER(p.title) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+                         OR LOWER(p.content_text) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%')))
+                </when>
+                <when test="condition.searchType == 'author'">
+                    AND LOWER(u.nickname) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectPosts" resultType="com.example.template.domain.post.application.PostListItem">
+        SELECT p.id,
+               p.title,
+               p.author_id,
+               u.nickname AS author_nickname,
+               p.is_notice AS notice,
+               p.view_count,
+               p.comment_count,
+               CASE WHEN EXISTS (SELECT 1 FROM post_files pf WHERE pf.post_id = p.id
+                                  AND pf.usage_type = 'ATTACHMENT')
+                    THEN TRUE ELSE FALSE END AS has_attachment,
+               p.created_at
+          FROM posts p
+          JOIN users u ON u.id = p.author_id
+         WHERE <include refid="visibleCondition"/>
+           AND p.is_notice = FALSE
+        <include refid="searchCondition"/>
+         ORDER BY p.created_at DESC, p.id DESC
+         LIMIT #{condition.limit} OFFSET #{condition.offset}
+    </select>
+
+    <select id="countPosts" resultType="long">
+        SELECT COUNT(*)
+          FROM posts p
+          JOIN users u ON u.id = p.author_id
+         WHERE <include refid="visibleCondition"/>
+           AND p.is_notice = FALSE
+        <include refid="searchCondition"/>
+    </select>
+
+    <select id="selectNotices" resultType="com.example.template.domain.post.application.PostListItem">
+        SELECT p.id,
+               p.title,
+               p.author_id,
+               u.nickname AS author_nickname,
+               p.is_notice AS notice,
+               p.view_count,
+               p.comment_count,
+               CASE WHEN EXISTS (SELECT 1 FROM post_files pf WHERE pf.post_id = p.id
+                                  AND pf.usage_type = 'ATTACHMENT')
+                    THEN TRUE ELSE FALSE END AS has_attachment,
+               p.created_at
+          FROM posts p
+          JOIN users u ON u.id = p.author_id
+         WHERE p.board_id = #{boardId}
+           AND p.deleted_at IS NULL
+           AND p.status = 'PUBLISHED'
+           AND p.is_notice = TRUE
+         ORDER BY p.created_at DESC, p.id DESC
+    </select>
+</mapper>

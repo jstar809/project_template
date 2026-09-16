@@ -74,3 +74,27 @@ PRD에 없거나 PRD와 다르게 결정한 사항을 기록한다. 형식: 날�
 - **PRD 기준**: `V2__seed.sql`에서 기본 게시판과 함께 시드
 - **결정**: `V2__seed.sql`은 기본 게시판만 넣고, 관리자 계정은 M2에서 `AdminAccountInitializer`(ApplicationRunner)가 환경변수를 읽어 생성한다.
 - **이유**: 비밀번호를 BCrypt로 해시해야 하는데 고정 SQL로는 환경변수 기반 해시를 만들 수 없다. PRD 11.4에 반영했다.
+
+
+---
+
+## 2026-09-16 · M4
+
+### D-009. MyBatis Mapper가 application 계층 DTO를 반환하도록 허용
+- **배경**: PRD MB-03은 "MyBatis 결과는 application 계층의 조회 전용 DTO로 받는다"이고, PRD 7장 구조는 Mapper 인터페이스를 `infra/mybatis`에 둔다. 이 둘을 합치면 `infra → application` 의존이 생겨 ARCH-01(계층 규칙)에 걸린다.
+- **결정**: ArchUnit 규칙에서 `application` 계층 접근 허용 목록에 `infra`를 추가했다.
+- **이유**: DTO를 domain으로 내리면 화면용 조회 모델이 도메인에 섞인다. 다른 도메인 침범은 ARCH-04가 별도로 막고 있어 실질적 위험이 없다.
+
+### D-010. 긴 텍스트 컬럼은 length로 매핑한다
+- **배경**: `@JdbcTypeCode(SqlTypes.LONG32VARCHAR)`는 PostgreSQL에서는 통과했지만 MySQL에서 `expecting tinytext (CLOB)` 오류가 났다.
+- **결정**: `@Column(length = Integer.MAX_VALUE)`로 매핑한다. Hibernate가 길이를 보고 PostgreSQL은 `text`, MySQL은 `longtext`를 기대하게 된다.
+- **이유**: 벤더 전용 `columnDefinition`을 쓰지 않으면서 두 DB에서 validate를 통과하는 방법이다(PRD DB-04 준수).
+
+### D-011. 공개 읽기 API는 인증 없이 허용한다
+- **결정**: `GET /api/v1/boards/**`, `/api/v1/posts/**`, `/api/v1/files/**`는 `permitAll`로 두고, 실제 접근 범위는 게시판 권한(서비스 계층)이 판단한다.
+- **이유**: 공개 게시판은 비로그인도 읽을 수 있어야 한다. 읽기 권한이 USER/ADMIN인 게시판은 서비스에서 403을 던지므로 보안이 유지된다.
+
+### D-012. 통합 테스트는 컨테이너를 공유하고 고유 값으로 격리한다
+- **배경**: 컨테이너를 JVM당 하나만 띄워 재사용하므로 테스트 간 데이터가 누적된다.
+- **결정**: 각 테스트는 고유한 slug와 이메일을 만들어 자기 데이터만 검증한다. 시드 데이터 검증은 "N개 이상"으로 한다.
+- **이유**: 테스트마다 DB를 초기화하면 느려지고, REQUIRES_NEW 트랜잭션과도 충돌한다.

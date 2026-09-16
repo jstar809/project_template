@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.template.domain.board.infra.mybatis.BoardQueryMapper">
+
+    <!-- 두 DB에서 모두 동작하는 표준 SQL만 사용한다. -->
+    <select id="selectReadableBoards" resultType="com.example.template.domain.board.application.BoardSummary">
+        SELECT b.id,
+               b.slug,
+               b.name,
+               b.description,
+               b.comment_enabled,
+               b.attachment_enabled,
+               b.sort_order
+          FROM boards b
+         WHERE b.deleted_at IS NULL
+           AND b.active = TRUE
+           AND b.read_permission IN
+        <foreach item="permission" collection="allowedPermissions" open="(" separator="," close=")">
+            #{permission}
+        </foreach>
+         ORDER BY b.sort_order ASC, b.id ASC
+    </select>
+
+    <select id="selectAdminBoards" resultType="com.example.template.domain.board.application.AdminBoardSummary">
+        SELECT b.id,
+               b.slug,
+               b.name,
+               b.description,
+               b.read_permission,
+               b.write_permission,
+               b.comment_enabled,
+               b.attachment_enabled,
+               b.active,
+               b.sort_order,
+               (SELECT COUNT(*)
+                  FROM posts p
+                 WHERE p.board_id = b.id
+                   AND p.deleted_at IS NULL) AS post_count,
+               b.created_at
+          FROM boards b
+         WHERE b.deleted_at IS NULL
+         ORDER BY b.sort_order ASC, b.id ASC
+    </select>
+</mapper>

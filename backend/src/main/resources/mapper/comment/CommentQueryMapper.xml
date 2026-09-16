@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.template.domain.comment.infra.mybatis.CommentQueryMapper">
+
+    <!--
+      삭제(deleted_at)나 숨김(status) 상태여도 행은 가져온다.
+      대댓글이 달린 댓글을 통째로 빼면 트리가 끊어지기 때문이다. 내용 처리는 서비스에서 한다.
+    -->
+    <select id="selectCommentsByPostId" resultType="com.example.template.domain.comment.application.CommentItem">
+        SELECT c.id,
+               c.parent_id,
+               c.content,
+               c.author_id,
+               u.nickname AS author_nickname,
+               CASE WHEN c.deleted_at IS NULL THEN FALSE ELSE TRUE END AS deleted,
+               CASE WHEN c.status = 'HIDDEN' THEN TRUE ELSE FALSE END AS hidden,
+               c.created_at,
+               c.updated_at
+          FROM comments c
+          JOIN users u ON u.id = c.author_id
+         WHERE c.post_id = #{postId}
+         <!-- 부모 댓글 다음에 그 대댓글들이 오도록 정렬한다.
+              부모는 COALESCE 값이 자기 id이고 대댓글보다 항상 id가 작으므로 두 DB에서 동일하게 동작한다. -->
+         ORDER BY COALESCE(c.parent_id, c.id) ASC, c.id ASC
+    </select>
+</mapper>

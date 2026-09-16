@@ -50,7 +50,10 @@ class ArchitectureTest {
                 .whereLayer("api")
                 .mayNotBeAccessedByAnyLayer()
                 .whereLayer("application")
-                .mayOnlyBeAccessedByLayers("api")
+                // infra(MyBatis Mapper)는 application의 조회 전용 DTO를 반환한다(PRD MB-03).
+                // 그래서 infra → application 의존은 허용한다. 반대로 application이 infra의
+                // 내부 타입을 쓰는 것은 없으며, 다른 도메인 침범은 ARCH-04가 막는다.
+                .mayOnlyBeAccessedByLayers("api", "infra")
                 .whereLayer("infra")
                 .mayOnlyBeAccessedByLayers("application");
 

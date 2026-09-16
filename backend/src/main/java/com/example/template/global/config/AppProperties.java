@@ -2,6 +2,7 @@ package com.example.template.global.config;
 
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.unit.DataSize;
 
 /**
  * 애플리케이션 고유 설정 (prefix: app).
@@ -20,7 +21,7 @@ public record AppProperties(Cors cors, Cookie cookie, Admin admin, RateLimit rat
         cookie = cookie == null ? new Cookie(false, "Strict") : cookie;
         admin = admin == null ? new Admin(null, null, null) : admin;
         rateLimit = rateLimit == null ? new RateLimit(10) : rateLimit;
-        storage = storage == null ? new Storage("local", "./uploads") : storage;
+        storage = storage == null ? new Storage("local", "./uploads", null) : storage;
     }
 
     /** CORS 허용 출처. 쉼표로 구분한 문자열을 넣으면 목록으로 변환된다. */
@@ -63,11 +64,17 @@ public record AppProperties(Cors cors, Cookie cookie, Admin admin, RateLimit rat
     /**
      * @param type 저장소 구현 (local)
      * @param localPath 로컬 저장 경로
+     * @param maxFileSize 업로드 최대 크기 (예: 10MB)
      */
-    public record Storage(String type, String localPath) {
+    public record Storage(String type, String localPath, DataSize maxFileSize) {
         public Storage {
             type = type == null ? "local" : type;
             localPath = localPath == null ? "./uploads" : localPath;
+            maxFileSize = maxFileSize == null ? DataSize.ofMegabytes(10) : maxFileSize;
+        }
+
+        public long maxFileSizeBytes() {
+            return maxFileSize.toBytes();
         }
     }
 }

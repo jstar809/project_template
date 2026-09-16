@@ -8,7 +8,7 @@
 | M1 | [M1-backend-infra.md](M1-backend-infra.md) | 백엔드 공통 인프라 (JPA+MyBatis, DB 2종, ArchUnit) | ✅ 완료 (2026-09-16) | 약 1.5시간 |
 | M2 | [M2-auth.md](M2-auth.md) | 인증과 사용자 (JWT) | ✅ 완료 (2026-09-16) | 약 2시간 |
 | M3 | [M3-frontend-base.md](M3-frontend-base.md) | 프론트 기반과 인증 화면 | ✅ 완료 (2026-09-16) | 약 1.5시간 |
-| M4 | M4-cms-backend.md | CMS 백엔드 (게시판·글·댓글·파일) | ⬜ 예정 | |
+| M4 | [M4-cms-backend.md](M4-cms-backend.md) | CMS 백엔드 (게시판·글·댓글·파일) | ✅ 완료 (2026-09-16) | 약 2.5시간 |
 | M5 | M5-cms-frontend.md | CMS 사용자 화면과 에디터 | ⬜ 예정 | |
 | M6 | M6-admin.md | 관리자 페이지 | ⬜ 예정 | |
 | M7 | M7-quality-ci.md | 품질 도구, Docker, CI | ⬜ 예정 | |

@@ -57,6 +57,10 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
                         .permitAll()
+                        // 읽기 API는 비로그인도 호출할 수 있다. 실제 노출 범위는 게시판 권한이 결정한다
+                        // (예: 읽기 권한이 USER인 게시판은 서비스에서 403을 던진다).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/boards/**", "/api/v1/posts/**", "/api/v1/files/**")
+                        .permitAll()
                         // 관리자 전용
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")
