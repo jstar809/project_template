@@ -1,0 +1,10 @@
+logging:
+  level:
+    root: info
+    com.example.template: info
+
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}

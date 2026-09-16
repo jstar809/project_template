@@ -1,0 +1,50 @@
+# 로컬 개발용 compose.
+#   DB만 띄우기:   docker compose --profile postgresql up -d
+#                  docker compose --profile mysql up -d
+#   전체 실행(backend/frontend)은 M7에서 full 프로필로 추가한다.
+name: template
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    profiles: ["postgresql"]
+    environment:
+      POSTGRES_DB: ${DB_NAME:-template}
+      POSTGRES_USER: ${DB_USERNAME:-template}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-template}
+      TZ: UTC
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-template} -d ${DB_NAME:-template}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  mysql:
+    image: mysql:8.4
+    profiles: ["mysql"]
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-template}
+      MYSQL_USER: ${DB_USERNAME:-template}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-template}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  pgdata:
+  mysqldata:

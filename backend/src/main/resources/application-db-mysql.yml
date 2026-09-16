@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:template}?connectionTimeZone=UTC&characterEncoding=UTF-8&rewriteBatchedStatements=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:template}
+    password: ${DB_PASSWORD:template}
+  flyway:
+    locations: classpath:db/migration/mysql

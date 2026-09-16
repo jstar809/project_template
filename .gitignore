@@ -1,0 +1,32 @@
+# 환경 변수 / 비밀값
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 업로드 파일
+uploads/
+
+# Java / Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+*.log
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+coverage/
+playwright-report/
+test-results/
+.vite/
+*.local
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

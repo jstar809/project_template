@@ -7,8 +7,8 @@
 
 | 단계 | 내용 | 상태 | 사용자 확인 | 커밋 | 완료일 |
 |---|---|---|---|---|---|
-| 준비 | 환경 점검, 레포 초기화 | 🙋 | ⬜ | 첫 커밋 | 2026-09-15 |
-| M0 | 레포 스캐폴딩과 개발환경 | ⬜ | ⬜ | | |
+| 준비 | 환경 점검, 레포 초기화 | ✅ | ✅ | 첫 커밋 | 2026-09-15 |
+| M0 | 레포 스캐폴딩과 개발환경 | 🙋 | ⬜ | M0 커밋 | 2026-09-16 |
 | M1 | 백엔드 공통 인프라 (JPA+MyBatis, DB 2종, ArchUnit) | ⬜ | ⬜ | | |
 | M2 | 인증과 사용자 (JWT) | ⬜ | ⬜ | | |
 | M3 | 프론트 기반과 인증 화면 | ⬜ | ⬜ | | |
@@ -42,7 +42,7 @@
 | 도구 | PRD 기준 | 설치된 버전 | 결과 |
 |---|---|---|---|
 | Java | JDK 21 | 21.0.11 (Oracle) | ✅ |
-| Node.js | 24 LTS | 22.22.3 | ⚠️ 결정 필요 (아래 참고) |
+| Node.js | 22 LTS로 변경 (결정 D-002) | 22.22.3 | ✅ |
 | npm | Node 번들 | 10.9.8 | ✅ |
 | Docker | Docker + Compose v2 | 29.5.2 (실행 중) | ✅ |
 | Git | – | 설치됨, 사용자 설정 완료 | ✅ |
@@ -56,34 +56,33 @@
 - [x] 첫 커밋 (`docs: PRD와 진행 현황판 추가`)
 
 ### 결정 필요 (🙋)
-- [ ] **Node 버전**: PRD 기준은 24 LTS이고 현재 설치된 버전은 22다.
-  - 선택지 A (권장): Node 24 LTS를 설치한다. PRD와 CI/Docker 버전이 일치한다.
-  - 선택지 B: 22를 그대로 쓰고 PRD, CI, Dockerfile을 22로 맞춘다. 22도 LTS라 동작에는 문제가 없다.
+- [x] **Node 버전**: 선택지 B(22 LTS 유지)로 결정. `engines.node >= 22.12`, `.nvmrc = 22`로 고정했고 M7의 Docker/CI도 22로 맞춘다. (decisions.md D-002)
 - [ ] (M8 전까지만 정하면 됨) 배포 서버와 도메인, staging/production 분리 방식, GHCR 이미지 공개 여부. PRD 21.2 참고.
 
 ### 내가 확인할 것 (🙋)
-- [ ] 이 파일(`PROGRESS.md`)이 보기 편한지
-- [ ] `git log --oneline`에 첫 커밋이 보이는지
+- [x] 이 파일(`PROGRESS.md`)이 보기 편한지
+- [x] `git log --oneline`에 첫 커밋이 보이는지 (c24faa4)
 
 ---
 
 ## M0. 레포 스캐폴딩과 개발환경
 
 ### 작업
-- [ ] 0-1. 라이브러리 최신 안정 버전 확인 → PRD 6장 표와 `docs/decisions.md`에 기록
-- [ ] 0-2. 루트 파일 작성: `.gitignore`, `.gitattributes`, `.editorconfig`, `README.md` 초안, `CLAUDE.md`, `docs/conventions.md`
-- [ ] 0-3. backend 생성: Spring Boot, **Gradle Groovy DSL**, Web/Security/Validation/JPA/Actuator/Flyway, PostgreSQL·MySQL 드라이버, MyBatis
-- [ ] 0-4. frontend 생성: Vite + React + TypeScript, Tailwind v4, shadcn/ui, ESLint/Prettier
-- [ ] 0-5. `docker-compose.yml` (`postgresql` / `mysql` 프로필), `.env.example`
-- [ ] 0-6. 편의 스크립트: `Makefile`, `scripts/*.ps1` (DB 실행, 백엔드 실행, 프론트 실행)
-- [ ] 0-7. `docs/devlog/00-index.md`, `docs/devlog/M0-scaffolding.md` 작성
-- [ ] 0-8. 커밋
+- [x] 0-1. 라이브러리 최신 안정 버전 확인 → PRD 6장 표와 `docs/decisions.md`에 기록
+- [x] 0-2. 루트 파일 작성: `.gitignore`, `.gitattributes`, `.editorconfig`, `README.md` 초안, `CLAUDE.md`, `docs/conventions.md`
+- [x] 0-3. backend 생성: Spring Boot, **Gradle Groovy DSL**, Web/Security/Validation/JPA/Actuator/Flyway, PostgreSQL·MySQL 드라이버, MyBatis
+- [x] 0-4. frontend 생성: Vite + React + TypeScript, Tailwind v4, shadcn/ui, ESLint/Prettier
+- [x] 0-5. `docker-compose.yml` (`postgresql` / `mysql` 프로필), `.env.example`
+- [x] 0-6. 편의 스크립트: `Makefile`, `scripts/*.ps1` (DB 실행, 백엔드 실행, 프론트 실행)
+- [x] 0-7. `docs/devlog/00-index.md`, `docs/devlog/M0-scaffolding.md` 작성
+- [x] 0-8. 커밋
 
 ### 완료 조건 (Claude가 검증)
-- [ ] `*.kts` 파일이 하나도 없다.
-- [ ] PostgreSQL과 MySQL 컨테이너가 각각 정상 기동한다.
-- [ ] 백엔드가 기동하고 `/actuator/health`가 `UP`이다.
-- [ ] 프론트 개발 서버가 뜨고 `npm run build`가 성공한다.
+- [x] `*.kts` 파일이 하나도 없다. (`git ls-files | grep -c "\.kts$"` → 0)
+- [x] PostgreSQL 17.11과 MySQL 8.4 컨테이너가 각각 healthy 상태로 기동한다.
+- [x] 백엔드가 **두 DB 모두에서** 기동하고 `/actuator/health`가 `UP`이다. (`{"status":"UP"}`)
+- [x] Swagger UI가 200으로 응답한다.
+- [x] 프론트 `npm run lint / typecheck / build`가 모두 통과한다. (빌드 702ms)
 
 ### 내가 확인할 것 (🙋)
 ```powershell

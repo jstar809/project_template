@@ -135,6 +135,8 @@
 
 ## 6. 기술 스택과 버전
 
+> **확정 완료 (2026-09-16, M0)**: 실제 확정 버전 표는 [docs/decisions.md](decisions.md) D-001에 있다. 주요 변경: **Node는 22 LTS**(D-002), **TypeScript는 6**(D-003), 린터는 **ESLint**(D-004).
+>
 > **규칙(MUST)**
 > - 구현 시작(M0) 시 각 라이브러리의 **실제 최신 안정 버전을 확인**하고, 아래 표의 "확정 버전" 열을 채워 `docs/decisions.md`에도 기록한다. 버전을 추측해서 쓰지 않는다.
 > - Spring Boot 4.x와 MyBatis Spring Boot Starter, springdoc-openapi, ShedLock의 호환 버전을 반드시 확인한다. 호환되지 않으면 Spring Boot 3.5.x로 내리고, 그 이유를 기록한다.
@@ -142,9 +144,9 @@
 ### 6.1 백엔드
 | 구분 | 기술 | 기준 | 확정 버전 |
 |---|---|---|---|
-| 언어 | Java (Temurin) | **JDK 21** | |
-| 프레임워크 | Spring Boot | 최신 안정판 (4.x 우선, 불가 시 3.5.x) | |
-| 빌드 | Gradle | 최신 안정판, **Groovy DSL** (`build.gradle`) | |
+| 언어 | Java (Temurin) | **JDK 21** | 21.0.11 |
+| 프레임워크 | Spring Boot | 최신 안정판 (4.x 우선, 불가 시 3.5.x) | 4.1.1 |
+| 빌드 | Gradle | 최신 안정판, **Groovy DSL** (`build.gradle`) | 9.7.1 |
 | ORM | Spring Data JPA (Hibernate) | Boot 관리 버전 | |
 | SQL 매퍼 | MyBatis Spring Boot Starter | Boot 버전과 호환되는 최신 | |
 | 마이그레이션 | Flyway + `flyway-database-postgresql`, `flyway-mysql` | Boot 관리 버전 | |
@@ -163,11 +165,11 @@
 ### 6.2 프론트엔드
 | 구분 | 기술 | 기준 | 확정 버전 |
 |---|---|---|---|
-| 런타임 | Node.js | 24 LTS | |
-| 패키지 매니저 | npm | Node 번들 버전 | |
-| 빌드 | Vite | 최신 안정판 | |
-| UI | React + TypeScript | React 19, TS 최신 | |
-| 스타일 | Tailwind CSS + shadcn/ui | Tailwind v4 | |
+| 런타임 | Node.js | **22 LTS (>= 22.12)** — D-002 | 22.22.3 |
+| 패키지 매니저 | npm | Node 번들 버전 | 10.9.8 |
+| 빌드 | Vite | 최신 안정판 | 8.3 |
+| UI | React + TypeScript | React 19, TS 6 (TS 7은 린트 미지원 — D-003) | React 19.2 / TS 6.0 |
+| 스타일 | Tailwind CSS + shadcn/ui | Tailwind v4 | 4.3 / CLI 4.21 |
 | 라우팅 | React Router | 최신 (Data/Library 모드 중 Library 모드) | |
 | 서버 상태 | TanStack Query | v5 이상 | |
 | 클라이언트 상태 | Zustand | 최신 | |
