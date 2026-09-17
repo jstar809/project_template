@@ -1,6 +1,6 @@
 # CLAUDE.md — 에이전트 작업 규칙
 
-이 저장소에서 작업할 때 반드시 지킨다. 기준 문서는 [docs/PRD.md](docs/PRD.md), 진행 상태는 [PROGRESS.md](PROGRESS.md)다.
+이 저장소에서 작업할 때 반드시 지킨다. 기준 문서는 [docs/PRD.md](docs/PRD.md), 진행 상태는 [PROGRESS.md](PROGRESS.md), 사용법은 [docs/usage.md](docs/usage.md)다.
 
 ## 진행 방식
 1. **마일스톤 순서대로** 진행한다(M0 → M8). 현재 단계는 `PROGRESS.md` 표에서 확인한다.
