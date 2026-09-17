@@ -9,7 +9,8 @@ Spring Boot(Java 21) + React(Vite) 모노레포 템플릿. 인증, 게시판 CMS
 - 결정 기록: [docs/decisions.md](docs/decisions.md)
 - 제작 과정 튜토리얼: [docs/devlog/](docs/devlog/)
 
-> 현재 진행 단계: **M7 완료** (품질 도구, Docker, CI). 다음은 M8(자동 배포).
+> 상태: **M0~M8 전체 완료.** 기능·테스트·CI·배포 설정이 모두 들어 있다.
+> (실제 서버 배포는 서버 준비 후 [배포 가이드](docs/deployment.md)를 따른다.)
 
 ## 들어 있는 기능
 
