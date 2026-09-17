@@ -14,7 +14,11 @@ const MePage = lazy(() => import('@/features/user/pages/MePage'))
 const PostListPage = lazy(() => import('@/features/post/pages/PostListPage'))
 const PostDetailPage = lazy(() => import('@/features/post/pages/PostDetailPage'))
 const PostEditorPage = lazy(() => import('@/features/post/pages/PostEditorPage'))
-const AdminDashboard = lazy(() => import('./pages/AdminDashboardPlaceholder'))
+const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboardPage'))
+const AdminBoards = lazy(() => import('@/features/admin/pages/AdminBoardsPage'))
+const AdminPosts = lazy(() => import('@/features/admin/pages/AdminPostsPage'))
+const AdminComments = lazy(() => import('@/features/admin/pages/AdminCommentsPage'))
+const AdminUsers = lazy(() => import('@/features/admin/pages/AdminUsersPage'))
 
 export function AppRouter() {
   return (
@@ -49,6 +53,10 @@ export function AppRouter() {
         <Route element={<RequireRole role="ADMIN" />}>
           <Route path="admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="boards" element={<AdminBoards />} />
+            <Route path="posts" element={<AdminPosts />} />
+            <Route path="comments" element={<AdminComments />} />
+            <Route path="users" element={<AdminUsers />} />
           </Route>
         </Route>
       </Routes>

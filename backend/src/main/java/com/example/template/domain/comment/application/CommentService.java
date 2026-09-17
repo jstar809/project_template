@@ -5,6 +5,7 @@ import com.example.template.domain.board.domain.Board;
 import com.example.template.domain.comment.domain.Comment;
 import com.example.template.domain.comment.domain.CommentErrorCode;
 import com.example.template.domain.comment.domain.CommentRepository;
+import com.example.template.domain.comment.domain.CommentStatus;
 import com.example.template.domain.comment.infra.mybatis.CommentQueryMapper;
 import com.example.template.domain.post.application.PostService;
 import com.example.template.domain.post.domain.Post;
@@ -12,6 +13,7 @@ import com.example.template.domain.user.domain.Role;
 import com.example.template.global.error.BusinessException;
 import com.example.template.global.security.AuthPrincipal;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -102,6 +104,32 @@ public class CommentService {
         requireEditPermission(comment, principal);
         comment.markDeleted(clock.instant());
         postService.addCommentCount(comment.getPostId(), -1);
+    }
+
+    /** 관리자 일괄 상태 변경(숨김/복구). */
+    @Transactional
+    public int changeStatusByAdmin(List<Long> commentIds, CommentStatus status) {
+        List<Comment> comments = commentRepository.findAllByIdIn(commentIds);
+        comments.forEach(comment -> {
+            if (status == CommentStatus.HIDDEN) {
+                comment.hide();
+            } else {
+                comment.publish();
+            }
+        });
+        return comments.size();
+    }
+
+    /** 관리자 일괄 삭제(soft delete). 게시글의 댓글 수도 함께 줄인다. */
+    @Transactional
+    public int deleteByAdmin(List<Long> commentIds) {
+        List<Comment> comments = commentRepository.findAllByIdIn(commentIds);
+        Instant now = clock.instant();
+        comments.forEach(comment -> {
+            comment.markDeleted(now);
+            postService.addCommentCount(comment.getPostId(), -1);
+        });
+        return comments.size();
     }
 
     private void validateParent(Long parentId, Long postId) {

@@ -7,6 +7,7 @@ import com.example.template.domain.file.domain.FileErrorCode;
 import com.example.template.domain.post.domain.Post;
 import com.example.template.domain.post.domain.PostErrorCode;
 import com.example.template.domain.post.domain.PostRepository;
+import com.example.template.domain.post.domain.PostStatus;
 import com.example.template.domain.post.infra.mybatis.PostQueryMapper;
 import com.example.template.domain.user.application.UserService;
 import com.example.template.domain.user.domain.Role;
@@ -15,6 +16,7 @@ import com.example.template.global.html.HtmlSanitizer;
 import com.example.template.global.response.PageResponse;
 import com.example.template.global.security.AuthPrincipal;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -152,6 +154,33 @@ public class PostService {
 
     public long countByBoard(Long boardId) {
         return postRepository.countByBoardId(boardId);
+    }
+
+    /**
+     * 관리자 일괄 상태 변경(숨김/복구).
+     *
+     * <p>권한 검사는 SecurityConfig가 ADMIN으로 제한하므로 여기서는 하지 않는다.
+     */
+    @Transactional
+    public int changeStatusByAdmin(List<Long> postIds, PostStatus status) {
+        List<Post> posts = postRepository.findAllByIdIn(postIds);
+        posts.forEach(post -> {
+            if (status == PostStatus.HIDDEN) {
+                post.hide();
+            } else {
+                post.publish();
+            }
+        });
+        return posts.size();
+    }
+
+    /** 관리자 일괄 삭제(soft delete). */
+    @Transactional
+    public int deleteByAdmin(List<Long> postIds) {
+        List<Post> posts = postRepository.findAllByIdIn(postIds);
+        Instant now = clock.instant();
+        posts.forEach(post -> post.markDeleted(now));
+        return posts.size();
     }
 
     private void requireEditPermission(Post post, AuthPrincipal principal, Role role) {

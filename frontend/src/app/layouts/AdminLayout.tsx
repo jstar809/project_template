@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/features/auth/components/UserMenu'
 
-/** M6에서 메뉴가 채워진다. 지금은 뼈대만 둔다. */
+/** 관리자 화면 메뉴 */
 const MENUS = [
   { to: '/admin', label: '대시보드', end: true },
   { to: '/admin/boards', label: '게시판 관리' },
   { to: '/admin/posts', label: '게시글 관리' },
+  { to: '/admin/comments', label: '댓글 관리' },
   { to: '/admin/users', label: '사용자 관리' },
 ]
 

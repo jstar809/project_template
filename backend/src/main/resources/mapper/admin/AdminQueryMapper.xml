@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.template.domain.admin.infra.mybatis.AdminQueryMapper">
+
+    <!-- 대시보드 숫자: 서브쿼리 3개를 한 번에 -->
+    <select id="selectTotals" resultType="com.example.template.domain.admin.application.AdminDtos$Totals">
+        SELECT (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL)    AS users,
+               (SELECT COUNT(*) FROM posts WHERE deleted_at IS NULL)    AS posts,
+               (SELECT COUNT(*) FROM comments WHERE deleted_at IS NULL) AS comments
+    </select>
+
+    <!--
+      일별 집계. CAST(... AS DATE)는 PostgreSQL과 MySQL 모두 지원한다.
+      (DATE_TRUNC는 PostgreSQL 전용, DATE()는 MySQL 전용이라 쓰지 않는다.)
+    -->
+    <select id="selectDailySignups" resultType="com.example.template.domain.admin.application.AdminDtos$DailyCount">
+        SELECT CAST(u.created_at AS DATE) AS date,
+               COUNT(*)                   AS count
+          FROM users u
+         WHERE u.created_at >= #{from}
+           AND u.deleted_at IS NULL
+         GROUP BY CAST(u.created_at AS DATE)
+         ORDER BY date ASC
+    </select>
+
+    <select id="selectDailyPosts" resultType="com.example.template.domain.admin.application.AdminDtos$DailyCount">
+        SELECT CAST(p.created_at AS DATE) AS date,
+               COUNT(*)                   AS count
+          FROM posts p
+         WHERE p.created_at >= #{from}
+           AND p.deleted_at IS NULL
+         GROUP BY CAST(p.created_at AS DATE)
+         ORDER BY date ASC
+    </select>
+
+    <select id="selectRecentPosts" resultType="com.example.template.domain.admin.application.AdminDtos$RecentPost">
+        SELECT p.id,
+               p.title,
+               b.name     AS board_name,
+               u.nickname AS author_nickname,
+               p.created_at
+          FROM posts p
+          JOIN boards b ON b.id = p.board_id
+          JOIN users u ON u.id = p.author_id
+         WHERE p.deleted_at IS NULL
+         ORDER BY p.created_at DESC, p.id DESC
+         LIMIT #{limit}
+    </select>
+
+    <!-- ===== 게시글 관리 ===== -->
+    <sql id="adminPostCondition">
+        <if test="condition.boardId != null">
+            AND p.board_id = #{condition.boardId}
+        </if>
+        <if test="condition.status != null">
+            AND p.status = #{condition.status}
+        </if>
+        <if test="condition.keyword != null">
+            AND (LOWER(p.title) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+                 OR LOWER(p.content_text) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%')))
+        </if>
+        <if test="condition.from != null">
+            AND p.created_at >= #{condition.from}
+        </if>
+        <if test="condition.to != null">
+            AND p.created_at &lt;= #{condition.to}
+        </if>
+    </sql>
+
+    <select id="selectPosts" resultType="com.example.template.domain.admin.application.AdminDtos$AdminPostItem">
+        SELECT p.id,
+               p.title,
+               b.slug     AS board_slug,
+               b.name     AS board_name,
+               u.nickname AS author_nickname,
+               p.status,
+               CASE WHEN p.deleted_at IS NULL THEN FALSE ELSE TRUE END AS deleted,
+               p.view_count,
+               p.comment_count,
+               p.created_at
+          FROM posts p
+          JOIN boards b ON b.id = p.board_id
+          JOIN users u ON u.id = p.author_id
+         WHERE 1 = 1
+        <include refid="adminPostCondition"/>
+         ORDER BY p.created_at DESC, p.id DESC
+         LIMIT #{condition.limit} OFFSET #{condition.offset}
+    </select>
+
+    <select id="countPosts" resultType="long">
+        SELECT COUNT(*)
+          FROM posts p
+         WHERE 1 = 1
+        <include refid="adminPostCondition"/>
+    </select>
+
+    <!-- ===== 댓글 관리 ===== -->
+    <sql id="adminCommentCondition">
+        <if test="condition.status != null">
+            AND c.status = #{condition.status}
+        </if>
+        <if test="condition.keyword != null">
+            AND LOWER(c.content) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+        </if>
+    </sql>
+
+    <select id="selectComments" resultType="com.example.template.domain.admin.application.AdminDtos$AdminCommentItem">
+        SELECT c.id,
+               c.post_id,
+               p.title    AS post_title,
+               c.content,
+               u.nickname AS author_nickname,
+               c.status,
+               CASE WHEN c.deleted_at IS NULL THEN FALSE ELSE TRUE END AS deleted,
+               c.created_at
+          FROM comments c
+          JOIN posts p ON p.id = c.post_id
+          JOIN users u ON u.id = c.author_id
+         WHERE 1 = 1
+        <include refid="adminCommentCondition"/>
+         ORDER BY c.created_at DESC, c.id DESC
+         LIMIT #{condition.limit} OFFSET #{condition.offset}
+    </select>
+
+    <select id="countComments" resultType="long">
+        SELECT COUNT(*)
+          FROM comments c
+         WHERE 1 = 1
+        <include refid="adminCommentCondition"/>
+    </select>
+
+    <!-- ===== 사용자 관리 ===== -->
+    <sql id="adminUserCondition">
+        <if test="condition.keyword != null">
+            AND (LOWER(u.email) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%'))
+                 OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', #{condition.keyword}, '%')))
+        </if>
+        <if test="condition.role != null">
+            AND u.role = #{condition.role}
+        </if>
+        <if test="condition.status != null">
+            AND u.status = #{condition.status}
+        </if>
+    </sql>
+
+    <select id="selectUsers" resultType="com.example.template.domain.admin.application.AdminDtos$AdminUserItem">
+        SELECT u.id,
+               u.email,
+               u.nickname,
+               u.role,
+               u.status,
+               (SELECT COUNT(*) FROM posts p WHERE p.author_id = u.id AND p.deleted_at IS NULL) AS post_count,
+               u.last_login_at,
+               u.created_at
+          FROM users u
+         WHERE u.deleted_at IS NULL
+        <include refid="adminUserCondition"/>
+         ORDER BY u.created_at DESC, u.id DESC
+         LIMIT #{condition.limit} OFFSET #{condition.offset}
+    </select>
+
+    <select id="countUsers" resultType="long">
+        SELECT COUNT(*)
+          FROM users u
+         WHERE u.deleted_at IS NULL
+        <include refid="adminUserCondition"/>
+    </select>
+</mapper>

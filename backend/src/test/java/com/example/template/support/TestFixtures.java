@@ -14,6 +14,9 @@ public class TestFixtures {
 
     private static final String PASSWORD = "password123";
 
+    /** 만들어진 계정 정보 */
+    public record Account(Long userId, String email, String accessToken) {}
+
     private final AuthService authService;
     private final UserService userService;
 
@@ -22,19 +25,29 @@ public class TestFixtures {
         this.userService = userService;
     }
 
-    /** 일반 사용자를 만들고 Access Token을 돌려준다. */
-    public String createUserAndLogin() {
+    /** 일반 사용자를 만들고 토큰과 id를 돌려준다. */
+    public Account createUser() {
         String email = uniqueEmail();
-        authService.signup(email, PASSWORD, uniqueNickname());
-        return login(email);
+        User user = userService.register(email, PASSWORD, uniqueNickname());
+        return new Account(user.getId(), email, login(email));
     }
 
-    /** 관리자 사용자를 만들고 Access Token을 돌려준다. */
-    public String createAdminAndLogin() {
+    /** 관리자 사용자를 만들고 토큰과 id를 돌려준다. */
+    public Account createAdmin() {
         String email = uniqueEmail();
         User user = userService.register(email, PASSWORD, uniqueNickname());
         userService.changeRole(user.getId(), Role.ADMIN);
-        return login(email);
+        return new Account(user.getId(), email, login(email));
+    }
+
+    /** 일반 사용자 토큰만 필요할 때 */
+    public String createUserAndLogin() {
+        return createUser().accessToken();
+    }
+
+    /** 관리자 토큰만 필요할 때 */
+    public String createAdminAndLogin() {
+        return createAdmin().accessToken();
     }
 
     private String login(String email) {

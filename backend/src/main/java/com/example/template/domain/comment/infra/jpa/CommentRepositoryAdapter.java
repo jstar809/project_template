@@ -2,6 +2,7 @@ package com.example.template.domain.comment.infra.jpa;
 
 import com.example.template.domain.comment.domain.Comment;
 import com.example.template.domain.comment.domain.CommentRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -23,5 +24,10 @@ public class CommentRepositoryAdapter implements CommentRepository {
     @Override
     public Optional<Comment> findById(Long id) {
         return jpaRepository.findByIdAndDeletedAtIsNull(id);
+    }
+
+    @Override
+    public List<Comment> findAllByIdIn(List<Long> ids) {
+        return jpaRepository.findAllByIdInAndDeletedAtIsNull(ids);
     }
 }

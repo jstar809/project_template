@@ -1,6 +1,7 @@
 package com.example.template.domain.comment.infra.jpa;
 
 import com.example.template.domain.comment.domain.Comment;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -8,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CommentJpaRepository extends JpaRepository<Comment, Long> {
 
     Optional<Comment> findByIdAndDeletedAtIsNull(Long id);
+
+    List<Comment> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
 }
