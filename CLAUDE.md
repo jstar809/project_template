@@ -1,5 +1,7 @@
 # CLAUDE.md — 에이전트 작업 규칙
 
+> 이 저장소를 처음 이어받았다면 [HANDOFF.md](HANDOFF.md)를 먼저 읽는다.
+
 이 저장소에서 작업할 때 반드시 지킨다. 기준 문서는 [docs/PRD.md](docs/PRD.md), 진행 상태는 [PROGRESS.md](PROGRESS.md), 사용법은 [docs/usage.md](docs/usage.md)다.
 
 ## 진행 방식

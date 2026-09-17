@@ -3,6 +3,7 @@
 Spring Boot(Java 21) + React(Vite) 모노레포 템플릿. 인증, 게시판 CMS, 관리자 페이지, 테스트, CI/CD가 미리 구현된 상태에서 새 프로젝트를 시작하기 위한 프로젝트다.
 
 - **사용 가이드: [docs/usage.md](docs/usage.md)** ← 처음이라면 여기부터
+- 작업 인수인계(AI 에이전트용): [HANDOFF.md](HANDOFF.md)
 - 배포 가이드: [docs/deployment.md](docs/deployment.md)
 - 요구사항 문서: [docs/PRD.md](docs/PRD.md)
 - 진행 현황판: [PROGRESS.md](PROGRESS.md)
