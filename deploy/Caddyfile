@@ -1,0 +1,27 @@
+# Caddy는 도메인만 적어두면 Let's Encrypt 인증서를 자동으로 받고 갱신한다.
+# (nginx + certbot 조합보다 설정이 단순해서 골랐다. decisions D-021 참고)
+
+{$DOMAIN} {
+	encode gzip zstd
+
+	# 실제 정적 파일 서빙과 /api 프록시는 frontend 컨테이너의 nginx가 처리한다.
+	# Caddy는 HTTPS 종료와 헤더 정리만 담당한다.
+	reverse_proxy frontend:80 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+	}
+
+	header {
+		# HTTPS로만 접속하도록 브라우저에 알린다(1년).
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

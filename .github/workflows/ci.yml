@@ -157,7 +157,7 @@ jobs:
 
       - name: 백엔드가 준비될 때까지 대기
         run: |
-          for i in $(seq 1 60); do
+          for _ in $(seq 1 60); do
             if curl -sf http://localhost:8081/actuator/health | grep -q '"status":"UP"'; then
               echo "준비 완료"; exit 0
             fi

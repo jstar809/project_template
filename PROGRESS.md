@@ -15,8 +15,8 @@
 | M4 | CMS 백엔드 (게시판·글·댓글·파일) | ✅ | ⏭️ 보류 | `2e811cb` | 2026-09-16 |
 | M5 | CMS 사용자 화면과 에디터 | ✅ | ⏭️ 보류 | `4be286a` | 2026-09-16 |
 | M6 | 관리자 페이지 | ✅ | ⏭️ 보류 | `4512e09` | 2026-09-17 |
-| M7 | 품질 도구, Docker, CI | 🙋 | ⬜ | M7 커밋 | 2026-09-17 |
-| M8 | CD(자동 배포)와 운영 문서 | ⬜ | ⬜ | | |
+| M7 | 품질 도구, Docker, CI | ✅ | ⏭️ CI 확인 필요 | `8fe386b` | 2026-09-17 |
+| M8 | CD(자동 배포)와 운영 문서 | 🙋 | ⬜ | M8 커밋 | 2026-09-17 |
 
 ## 진행 방법 (단계마다 반복)
 
@@ -352,12 +352,12 @@ docker compose --profile full --profile postgresql up -d --build
 ## M8. CD(자동 배포)와 운영 문서
 
 ### 작업
-- [ ] 8-1. `.github/workflows/cd.yml`: GHCR 푸시 → staging 자동 배포 → production 승인 배포
-- [ ] 8-2. `deploy/docker-compose.prod.yml`, `Caddyfile`(자동 HTTPS)
-- [ ] 8-3. `deploy/deploy.sh`: 헬스체크 실패 시 자동 롤백
-- [ ] 8-4. `deploy/server-setup.sh`, `deploy/backup.sh`, `.env.prod.example`
-- [ ] 8-5. GitHub Secrets / Environments 설정 가이드, 롤백 절차 문서
-- [ ] 8-6. devlog `M8-cd.md`, 커밋
+- [x] 8-1. `.github/workflows/cd.yml`: GHCR 푸시 → staging 자동 배포 → production 승인 배포
+- [x] 8-2. `deploy/docker-compose.prod.yml`, `Caddyfile`(자동 HTTPS)
+- [x] 8-3. `deploy/deploy.sh`: 헬스체크 실패 시 자동 롤백
+- [x] 8-4. `deploy/server-setup.sh`, `deploy/backup.sh`, `.env.prod.example`
+- [x] 8-5. GitHub Secrets / Environments 설정 가이드, 롤백 절차 문서
+- [x] 8-6. devlog `M8-cd.md`, 커밋
 
 ### 사전 준비 (🙋 이 단계 전에 필요)
 - [ ] 리눅스 서버 준비 (Ubuntu 24.04, 최소 2 vCPU / 4GB 권장)
@@ -366,8 +366,11 @@ docker compose --profile full --profile postgresql up -d --build
 - [ ] GitHub 레포 Settings에서 Environments(`staging`, `production`)와 Secrets 등록 (가이드는 이 단계에서 제공)
 
 ### 완료 조건 (Claude가 검증)
-- [ ] 워크플로와 스크립트가 문법 검사(`actionlint`, `shellcheck`)를 통과한다.
-- [ ] 서버가 없으면 실제 배포 검증은 🙋로 남긴다.
+- [x] 워크플로가 actionlint 검사를 통과한다. (CI의 미사용 변수 경고도 함께 수정)
+- [x] 배포 스크립트 3개가 shellcheck 경고 0으로 통과한다. (CRLF 문제 발견·수정)
+- [x] 운영 compose가 두 DB 프로필 모두 정상 해석된다. (COOKIE_SECURE=true, Swagger 비활성 확인)
+- [x] 배포 가이드 문서 작성 (docs/deployment.md)
+- [ ] ⚠️ **실제 서버 배포 검증은 서버 준비 후 필요** (아래 체크리스트)
 
 ### 내가 확인할 것 (🙋)
 - [ ] main에 머지하면 Actions에서 이미지 빌드 → staging 배포가 자동으로 진행된다.
@@ -377,6 +380,10 @@ docker compose --profile full --profile postgresql up -d --build
 - [ ] 서버에서 `backup.sh`를 실행하면 백업 파일이 생긴다.
 
 ### 메모
+- 2026-09-17: 서버가 없어 실제 배포는 미검증. 정적 검사(shellcheck·actionlint·compose config)는 모두 통과.
+- 배포 절차와 서버 준비 방법은 [docs/deployment.md](docs/deployment.md)에 정리했다.
+- 중요한 한계: 롤백해도 **DB는 되돌아가지 않는다.** 스키마 변경은 Expand–Contract 순서로 한다.
+- 자동 롤백은 일부러 실패시켜 봐야 믿을 수 있다. 서버 준비 후 5번 항목을 꼭 해보길 권한다.
 
 ---
 
