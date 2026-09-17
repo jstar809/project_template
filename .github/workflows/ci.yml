@@ -50,7 +50,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: 포맷 검사 + 테스트 + 빌드 (${{ matrix.db }})
         working-directory: backend
