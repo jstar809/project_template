@@ -117,3 +117,31 @@ PRD에 없거나 PRD와 다르게 결정한 사항을 기록한다. 형식: 날�
 ### D-015. 대시보드 추이는 차트 라이브러리 없이 구현
 - **결정**: 막대 7개를 div 높이로 표현한다.
 - **이유**: 차트 라이브러리는 번들을 수십 KB 늘린다. 표현이 복잡해지면 그때 도입한다.
+
+
+---
+
+## 2026-09-17 · M7
+
+### D-016. Spring Boot layered jar는 "같은 디렉터리"로 펼친다
+- **배경**: `extract --layers` 결과를 폴더 구조 그대로 복사하면 `NoClassDefFoundError`가 난다. jar 매니페스트의 `Class-Path`가 자기 옆의 `lib/`를 가리키기 때문이다.
+- **결정**: 네 레이어를 각각 같은 디렉터리(`/app`)에 차례로 COPY한다. jar 이름은 바꾸지 않는다.
+- **이유**: 경로가 맞으면서도 레이어 캐시 이득(코드만 고쳤을 때 수백 KB만 재전송)을 그대로 얻는다.
+
+### D-017. 업로드 디렉터리는 이미지에서 미리 만들고 소유권을 지정한다
+- **배경**: non-root(uid 10001)로 실행하는데 도커가 만든 빈 볼륨은 root 소유라 업로드가 `Permission denied`로 실패했다.
+- **결정**: Dockerfile에서 `mkdir -p /app/uploads && chown -R appuser:appuser /app`.
+- **이유**: 도커는 빈 named volume을 만들 때 이미지 쪽 디렉터리의 소유권을 가져간다. 이미 만들어진 볼륨은 삭제 후 재생성이 필요하다.
+
+### D-018. nginx upstream은 변수로 지정한다
+- **결정**: `resolver 127.0.0.11` + `set $backend_upstream backend:8080; proxy_pass http://$backend_upstream;`
+- **이유**: 주소를 직접 쓰면 nginx가 시작 시점에 이름을 해석해, 백엔드보다 먼저 뜨면 죽는다. 변수 방식은 요청 시점에 해석하므로 기동 순서에 자유롭고 `--scale`에도 대응한다.
+
+### D-019. 프록시 뒤 CORS: forward-headers-strategy 사용
+- **배경**: nginx 뒤에서 브라우저 요청이 403(Invalid CORS request)으로 거부됐다. 서버가 자기 주소를 `localhost:8080`으로 알아 같은 사이트 요청을 외부 출처로 판단했다.
+- **결정**: `server.forward-headers-strategy: framework`를 켜고, `CORS_ALLOWED_ORIGINS`에 실제 서비스 주소(8081)를 포함한다.
+- **이유**: 운영에서도 Caddy 뒤에 서므로 동일한 설정이 필요하다.
+
+### D-020. 스케줄러 주기를 설정값으로 노출
+- **결정**: `TEMP_FILE_CLEANUP_CRON`, `REFRESH_TOKEN_CLEANUP_CRON` 환경변수로 cron을 바꿀 수 있게 했다.
+- **이유**: 다중 인스턴스에서 분산 락이 실제로 동작하는지 확인하려면 짧은 주기로 돌려봐야 한다. 기본값은 운영용 주기를 유지한다.

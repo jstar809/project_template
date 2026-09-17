@@ -1,11 +1,21 @@
-# 로컬 개발용 compose.
-#   DB만 띄우기:   docker compose --profile postgresql up -d
-#                  docker compose --profile mysql up -d
-#   전체 실행(backend/frontend)은 M7에서 full 프로필로 추가한다.
+# 로컬 개발 / 전체 실행용 compose.
+#
+#   DB만 띄우기 (개발 중 IDE에서 백엔드를 직접 실행할 때)
+#     docker compose --profile postgresql up -d
+#     docker compose --profile mysql up -d
+#
+#   전체 실행 (백엔드 + 프론트 + DB)
+#     docker compose --profile full --profile postgresql up -d --build
+#     → http://localhost:8081
+#
+#   백엔드를 여러 개 띄우기 (수평 확장 확인)
+#     docker compose --profile full --profile postgresql up -d --scale backend=2
 name: template
 
 services:
-  postgres:
+  # 서비스 이름을 DB_VENDOR 값(postgresql)과 같게 맞춘다.
+  # 그래야 backend가 DB_HOST=${DB_VENDOR} 하나로 접속 대상을 찾을 수 있다.
+  postgresql:
     image: postgres:17-alpine
     profiles: ["postgresql"]
     environment:
@@ -45,6 +55,54 @@ services:
       timeout: 5s
       retries: 12
 
+  backend:
+    profiles: ["full"]
+    build:
+      context: ./backend
+    # container_name과 호스트 포트를 지정하지 않는다.
+    # 지정하면 --scale 로 여러 개를 띄울 때 이름/포트가 충돌한다.
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,db-${DB_VENDOR:-postgresql}
+      DB_HOST: ${DB_VENDOR:-postgresql}
+      DB_PORT: ${DB_INTERNAL_PORT:-5432}
+      DB_NAME: ${DB_NAME:-template}
+      DB_USERNAME: ${DB_USERNAME:-template}
+      DB_PASSWORD: ${DB_PASSWORD:-template}
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-please-32bytes-min}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NICKNAME: ${ADMIN_NICKNAME:-관리자}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8081}
+      STORAGE_LOCAL_PATH: /app/uploads
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      # 로그인 시도 제한. E2E처럼 같은 계정으로 반복 로그인하는 경우 넉넉히 준다.
+      LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-10}
+      TEMP_FILE_CLEANUP_CRON: ${TEMP_FILE_CLEANUP_CRON:-0 0 * * * *}
+    volumes:
+      # 인스턴스를 여러 개 띄워도 업로드 파일을 함께 보도록 같은 볼륨을 마운트한다.
+      - uploads:/app/uploads
+    depends_on:
+      postgresql:
+        condition: service_healthy
+        required: false
+      mysql:
+        condition: service_healthy
+        required: false
+    restart: unless-stopped
+
+  frontend:
+    profiles: ["full"]
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api/v1
+    ports:
+      - "${FRONTEND_PORT:-8081}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   pgdata:
   mysqldata:
+  uploads:

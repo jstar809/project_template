@@ -27,7 +27,8 @@ public class TempFileCleanupScheduler {
         this.clock = clock;
     }
 
-    @Scheduled(cron = "0 0 * * * *") // 매시 정각
+    // 기본은 매시 정각. 환경변수 TEMP_FILE_CLEANUP_CRON 으로 바꿀 수 있다(운영 점검·테스트용).
+    @Scheduled(cron = "${app.scheduler.temp-file-cleanup-cron:0 0 * * * *}")
     @SchedulerLock(name = "cleanupTempFiles", lockAtLeastFor = "PT1M", lockAtMostFor = "PT10M")
     public void cleanup() {
         fileService.cleanupTempFiles(clock.instant().minus(RETENTION), BATCH_SIZE);

@@ -26,5 +26,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // Vitest는 src/ 의 단위·통합 테스트만 담당한다.
+    // e2e/ 는 Playwright가 실행하므로 제외하지 않으면 "test()를 여기서 부를 수 없다" 오류가 난다.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
 })

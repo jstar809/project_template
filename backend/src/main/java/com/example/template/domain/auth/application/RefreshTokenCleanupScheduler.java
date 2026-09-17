@@ -29,7 +29,8 @@ public class RefreshTokenCleanupScheduler {
         this.clock = clock;
     }
 
-    @Scheduled(cron = "0 30 3 * * *") // 매일 새벽 3시 30분
+    // 기본은 매일 새벽 3시 30분.
+    @Scheduled(cron = "${app.scheduler.refresh-token-cleanup-cron:0 30 3 * * *}")
     @SchedulerLock(name = "cleanupExpiredRefreshTokens", lockAtLeastFor = "PT1M", lockAtMostFor = "PT10M")
     public void cleanup() {
         int deleted = authService.deleteExpiredTokens(clock.instant().minus(RETENTION));
