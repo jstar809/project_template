@@ -26,7 +26,7 @@ ext {
     shedlockVersion = '7.10.1'
     jjwtVersion = '0.13.0'
     sanitizerVersion = '20260313.1'
-    bucket4jVersion = '8.19.0'
+    bucket4jVersion = '8.20.0'
     tikaVersion = '4.0.0'
     logstashEncoderVersion = '9.0'
     archunitVersion = '1.5.0'
