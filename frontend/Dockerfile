@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ── 1단계: 빌드 ───────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 
 # package.json과 lock 파일만 먼저 복사 → 의존성 레이어 캐시 활용
