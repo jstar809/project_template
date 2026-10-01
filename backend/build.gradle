@@ -29,7 +29,7 @@ ext {
     bucket4jVersion = '8.19.0'
     tikaVersion = '4.0.0'
     logstashEncoderVersion = '9.0'
-    archunitVersion = '1.5.0'
+    archunitVersion = '1.5.1'
 }
 
 dependencies {
