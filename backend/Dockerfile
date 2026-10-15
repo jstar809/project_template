@@ -2,7 +2,7 @@
 
 # ── 1단계: 빌드 ───────────────────────────────────────────────
 # JDK가 필요한 것은 빌드할 때뿐이다. 결과물(jar)만 다음 단계로 넘긴다.
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:24-jdk AS builder
 WORKDIR /workspace
 
 # 의존성 목록만 먼저 복사하면, 소스만 바뀐 경우 이 레이어를 캐시에서 재사용한다.
@@ -24,7 +24,7 @@ RUN java -Djarmode=tools -jar build/libs/*.jar extract --layers --destination ex
 
 # ── 2단계: 실행 ───────────────────────────────────────────────
 # 실행에는 JRE만 있으면 된다(이미지가 훨씬 작다).
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:24-jre AS runtime
 
 # 헬스체크용 curl
 RUN apt-get update \
